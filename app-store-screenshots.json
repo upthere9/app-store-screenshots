@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 2,
+  "appName": "ShiftKing",
+  "themeId": "clean-light",
+  "connectedCanvas": true,
+  "locales": [
+    "ko",
+    "en"
+  ],
+  "locale": "en",
+  "device": "iphone",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [
+      {
+        "id": "shiftking-calendar",
+        "layout": "hero",
+        "label": {
+          "ko": "캘린더",
+          "en": "CALENDAR"
+        },
+        "headline": {
+          "ko": "교대근무와 일정을\n한눈에",
+          "en": "Shifts, plans,\none calendar"
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/01.png",
+        "transforms": {
+          "caption": {
+            "x": 105.60000000000001,
+            "y": 258.12,
+            "width": 1108.8,
+            "height": 803.04,
+            "rotation": 0,
+            "zIndex": 4
+          }
+        },
+        "background": {
+          "mode": "gradient",
+          "decorations": false,
+          "color": "#ffffff",
+          "color2": "#DBEAFE",
+          "angle": 47
+        },
+        "typography": {
+          "labelFontSize": 119,
+          "headlineFontSize": 148,
+          "locales": {
+            "en": {
+              "headlineFontSize": 189
+            }
+          }
+        }
+      },
+      {
+        "id": "shiftking-rosters",
+        "layout": "device-bottom",
+        "label": {
+          "ko": "근무표",
+          "en": "ROSTERS"
+        },
+        "headline": {
+          "ko": "3000개 근무표\n바로 시작",
+          "en": "3,000+ rosters\nready to use"
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/02.png",
+        "transforms": {
+          "device": {
+            "x": 153.1822478386166,
+            "y": 745.68,
+            "width": 1013.6355043227666,
+            "height": 2064.96,
+            "rotation": 0,
+            "zIndex": 1
+          },
+          "caption": {
+            "x": 105.59999999999991,
+            "y": 229.44,
+            "width": 1108.8,
+            "height": 803.0400000000001,
+            "rotation": 0,
+            "zIndex": 2
+          }
+        }
+      },
+      {
+        "id": "shiftking-team",
+        "layout": "two-devices",
+        "label": {
+          "ko": "동료 근무",
+          "en": "TEAM"
+        },
+        "headline": {
+          "ko": "동료 근무도\n쉽게 확인",
+          "en": "See every teammate\nshift"
+        },
+        "screenshot": "/screenshots/uploaded/0656a04595bbf9eb.png",
+        "screenshotSecondary": "/screenshots/uploaded/3b5746f127767b04.png",
+        "transforms": {
+          "deviceSecondary": {
+            "x": -79.19999999999982,
+            "y": 949.8070450097846,
+            "width": 871.2,
+            "height": 1774.7929549902153,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "device": {
+            "x": 486.92804610951,
+            "y": 952.1759999999998,
+            "width": 912.27195389049,
+            "height": 1858.4640000000002,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "shiftking-widgets",
+        "layout": "device-top",
+        "label": {
+          "ko": "위젯",
+          "en": "WIDGETS"
+        },
+        "headline": {
+          "ko": "위젯으로\n바로 확인",
+          "en": "Your shift\non widgets"
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/04.png",
+        "inverted": true,
+        "transforms": {
+          "caption": {
+            "x": 105.59999999999991,
+            "y": 1864.1999999999998,
+            "width": 1108.8,
+            "height": 803.0400000000001,
+            "rotation": 0,
+            "zIndex": 4
+          }
+        }
+      },
+      {
+        "id": "shiftking-tools",
+        "layout": "device-bottom",
+        "label": {
+          "ko": "부가기능",
+          "en": "TOOLS"
+        },
+        "headline": {
+          "ko": "알림, 통계,\n연차계산까지",
+          "en": "Alerts, stats,\nleave days"
+        },
+        "screenshot": "/screenshots/apple/iphone/{locale}/05.png"
+      }
+    ],
+    "android": [],
+    "ipad": [],
+    "android-7": [],
+    "android-10": [],
+    "feature-graphic": []
+  }
+}

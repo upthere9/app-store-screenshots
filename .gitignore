@@ -1,0 +1,14 @@
+node_modules
+.npm-cache
+.next
+out
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+.env*.local
+dist/
+build/
+.cache/
+.DS_Store
+.env
+.env.local
