@@ -1,7 +1,8 @@
 import type { BuiltInElementId, ElementId, TextElementId } from "./types";
 
 export const BUILT_IN_ELEMENT_IDS: BuiltInElementId[] = [
-  "caption",
+  "label",
+  "headline",
   "device",
   "deviceSecondary",
 ];

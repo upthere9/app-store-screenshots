@@ -210,7 +210,7 @@ function EditableText({
   );
 }
 
-// ---------- Caption (label + headline) ----------
+// ---------- Caption text helpers ----------
 
 function clampFontSize(value: number, min: number, max: number) {
   return Math.max(min, Math.min(max, value));
@@ -246,7 +246,8 @@ function captionTypographyFor(slide: Slide, locale: string, unit: number) {
   };
 }
 
-function Caption({
+function CaptionPart({
+  part,
   cW,
   cH,
   slide,
@@ -258,6 +259,7 @@ function Caption({
   inverted,
   onFocus,
 }: {
+  part: "label" | "headline";
   cW: number;
   cH: number;
   slide: Slide;
@@ -270,13 +272,11 @@ function Caption({
   onFocus?: () => void;
 }) {
   const fg = inverted ? theme.fgAlt : theme.fg;
-  const accent = theme.accent;
-  // Scale typography off the *shorter* dimension so landscape layouts don't
-  // produce headlines so tall they overlap the device frame.
   const unit = Math.min(cW, cH);
   const typography = captionTypographyFor(slide, locale, unit);
-  return (
-    <div style={{ textAlign: align, position: "relative", width: "100%" }}>
+
+  if (part === "label") {
+    return (
       <EditableText
         value={pickText(slide.label, locale)}
         editable={editable}
@@ -284,33 +284,39 @@ function Caption({
         onFocus={onFocus}
         placeholder="LABEL"
         style={{
+          width: "100%",
           fontFamily: fontStack(typography.labelFontFamily),
           fontSize: typography.labelFontSize,
           fontWeight: 700,
           letterSpacing: 0,
-          color: accent,
+          color: theme.accent,
+          textAlign: align,
           textTransform: "uppercase",
-          marginBottom: Math.max(unit * 0.018, typography.labelFontSize * 0.42),
           minHeight: typography.labelFontSize * 1.12,
         }}
       />
-      <EditableText
-        value={pickText(slide.headline, locale)}
-        editable={editable}
-        multiline
-        onChange={edit?.onHeadlineChange}
-        onFocus={onFocus}
-        placeholder="Headline goes here"
-        style={{
-          fontFamily: fontStack(typography.headlineFontFamily),
-          fontSize: typography.headlineFontSize,
-          fontWeight: 700,
-          lineHeight: 0.96,
-          letterSpacing: 0,
-          color: fg,
-        }}
-      />
-    </div>
+    );
+  }
+
+  return (
+    <EditableText
+      value={pickText(slide.headline, locale)}
+      editable={editable}
+      multiline
+      onChange={edit?.onHeadlineChange}
+      onFocus={onFocus}
+      placeholder="Headline goes here"
+      style={{
+        width: "100%",
+        fontFamily: fontStack(typography.headlineFontFamily),
+        fontSize: typography.headlineFontSize,
+        fontWeight: 700,
+        lineHeight: 0.96,
+        letterSpacing: 0,
+        color: fg,
+        textAlign: align,
+      }}
+    />
   );
 }
 
@@ -382,9 +388,47 @@ function Blob({
 type Rect = { x: number; y: number; width: number; height: number };
 type LayoutRects = {
   caption?: Rect & { align?: "center" | "left" };
+  label?: Rect & { align?: "center" | "left" };
+  headline?: Rect & { align?: "center" | "left" };
   device?: Rect;
   deviceSecondary?: Rect;
 };
+
+function splitCaptionRect(
+  caption: Rect & { align?: "center" | "left" },
+  part: "label" | "headline",
+): Rect & { align?: "center" | "left" } {
+  const labelH = caption.height * 0.22;
+  const gap = caption.height * 0.07;
+  if (part === "label") {
+    return {
+      x: caption.x,
+      y: caption.y,
+      width: caption.width,
+      height: labelH,
+      align: caption.align,
+    };
+  }
+  return {
+    x: caption.x,
+    y: caption.y + labelH + gap,
+    width: caption.width,
+    height: Math.max(1, caption.height - labelH - gap),
+    align: caption.align,
+  };
+}
+
+function withCaption(
+  caption: Rect & { align?: "center" | "left" },
+  rest: Omit<LayoutRects, "caption" | "label" | "headline"> = {},
+): LayoutRects {
+  return {
+    caption,
+    label: splitCaptionRect(caption, "label"),
+    headline: splitCaptionRect(caption, "headline"),
+    ...rest,
+  };
+}
 
 function getDefaultRects(
   layout: Slide["layout"],
@@ -403,77 +447,85 @@ function getDefaultRects(
 
   switch (layout) {
     case "hero":
-      return {
-        caption: { x: cW * 0.08, y: cH * 0.09, width: capW, height: capH, align: "center" },
-        device: {
-          x: (cW - deviceW) / 2,
-          y: cH - deviceH + deviceH * 0.15,
-          width: deviceW,
-          height: deviceH,
+      return withCaption(
+        { x: cW * 0.08, y: cH * 0.09, width: capW, height: capH, align: "center" },
+        {
+          device: {
+            x: (cW - deviceW) / 2,
+            y: cH - deviceH + deviceH * 0.15,
+            width: deviceW,
+            height: deviceH,
+          },
         },
-      };
+      );
     case "device-bottom":
-      return {
-        caption: { x: cW * 0.08, y: cH * 0.08, width: capW, height: capH, align: "center" },
-        device: {
-          x: (cW - deviceW) / 2,
-          y: cH - deviceH - cH * 0.02,
-          width: deviceW,
-          height: deviceH,
+      return withCaption(
+        { x: cW * 0.08, y: cH * 0.08, width: capW, height: capH, align: "center" },
+        {
+          device: {
+            x: (cW - deviceW) / 2,
+            y: cH - deviceH - cH * 0.02,
+            width: deviceW,
+            height: deviceH,
+          },
         },
-      };
+      );
     case "device-top":
-      return {
-        caption: { x: cW * 0.08, y: cH * 0.65, width: capW, height: capH, align: "center" },
-        device: {
-          x: (cW - deviceW) / 2,
-          y: -cH * 0.1,
-          width: deviceW,
-          height: deviceH,
+      return withCaption(
+        { x: cW * 0.08, y: cH * 0.65, width: capW, height: capH, align: "center" },
+        {
+          device: {
+            x: (cW - deviceW) / 2,
+            y: -cH * 0.1,
+            width: deviceW,
+            height: deviceH,
+          },
         },
-      };
+      );
     case "two-devices":
-      return {
-        caption: { x: cW * 0.08, y: cH * 0.08, width: capW, height: capH, align: "center" },
-        deviceSecondary: {
-          x: -cW * 0.06,
-          y: cH - smallH - cH * 0.05,
-          width: smallW,
-          height: smallH,
+      return withCaption(
+        { x: cW * 0.08, y: cH * 0.08, width: capW, height: capH, align: "center" },
+        {
+          deviceSecondary: {
+            x: -cW * 0.06,
+            y: cH - smallH - cH * 0.05,
+            width: smallW,
+            height: smallH,
+          },
+          device: {
+            x: cW - deviceW * 0.9 + cW * 0.06,
+            y: cH - deviceH * 0.9 - cH * 0.02,
+            width: deviceW * 0.9,
+            height: (deviceW * 0.9) / frameAspect,
+          },
         },
-        device: {
-          x: cW - deviceW * 0.9 + cW * 0.06,
-          y: cH - deviceH * 0.9 - cH * 0.02,
-          width: deviceW * 0.9,
-          height: (deviceW * 0.9) / frameAspect,
-        },
-      };
+      );
     case "no-device":
-      return {
-        caption: {
-          x: cW * 0.1,
-          y: cH * 0.35,
-          width: cW * 0.8,
-          height: cH * 0.3,
-          align: "center",
-        },
-      };
+      return withCaption({
+        x: cW * 0.1,
+        y: cH * 0.35,
+        width: cW * 0.8,
+        height: cH * 0.3,
+        align: "center",
+      });
     case "split-landscape":
-      return {
-        caption: {
+      return withCaption(
+        {
           x: cW * 0.05,
           y: cH * 0.25,
           width: cW * 0.38,
           height: cH * 0.5,
           align: "left",
         },
-        device: {
-          x: cW - deviceW + cW * 0.03,
-          y: (cH - deviceH) / 2,
-          width: deviceW,
-          height: deviceH,
+        {
+          device: {
+            x: cW - deviceW + cW * 0.03,
+            y: (cH - deviceH) / 2,
+            width: deviceW,
+            height: deviceH,
+          },
         },
-      };
+      );
     default:
       return {};
   }
@@ -486,6 +538,15 @@ function rectFor(
 ): (Rect & { align?: "center" | "left" }) | undefined {
   const saved = slide.transforms?.[id];
   const def = defaults[id];
+  if (!saved && (id === "label" || id === "headline") && slide.transforms?.caption) {
+    return splitCaptionRect(
+      {
+        ...slide.transforms.caption,
+        align: defaults.caption?.align,
+      },
+      id,
+    );
+  }
   if (!def && !saved) return undefined;
   if (!saved) return def;
   return {
@@ -522,19 +583,22 @@ export function getElementTransform(
   const rect = rectFor(id as BuiltInElementId, slide, defaults);
   if (!rect) return undefined;
   const saved = slide.transforms?.[id as BuiltInElementId];
+  const legacyCaption = id === "label" || id === "headline" ? slide.transforms?.caption : undefined;
   return {
     x: rect.x,
     y: rect.y,
     width: rect.width,
     height: rect.height,
-    rotation: saved?.rotation ?? 0,
-    zIndex: saved?.zIndex ?? defaultElementZ(id as BuiltInElementId),
+    rotation: saved?.rotation ?? legacyCaption?.rotation ?? 0,
+    zIndex: saved?.zIndex ?? legacyCaption?.zIndex ?? defaultElementZ(id as BuiltInElementId),
   };
 }
 
 function defaultElementZ(id: BuiltInElementId): number {
   if (id === "deviceSecondary") return 2;
   if (id === "device") return 3;
+  if (id === "label") return 4;
+  if (id === "headline") return 5;
   return 4;
 }
 
@@ -964,7 +1028,8 @@ function SlideElements({
   const screenshotSecondary = resolveScreenshot(slide.screenshotSecondary, locale);
   const { cW, cH, Frame, frameAspect, defaults } = getSlideGeometry(slide, device, orientation);
   const inverted = !!slide.inverted;
-  const captionRect = rectFor("caption", slide, defaults);
+  const labelRect = rectFor("label", slide, defaults);
+  const headlineRect = rectFor("headline", slide, defaults);
   const deviceRect = rectFor("device", slide, defaults);
   const secondaryRect = rectFor("deviceSecondary", slide, defaults);
 
@@ -976,28 +1041,14 @@ function SlideElements({
     return { ...t, x: t.x - screenX };
   }
 
-  function renderCaption() {
-    if (!captionRect) return null;
-    const saved = slide.transforms?.caption;
-    const rotation = saved?.rotation ?? 0;
-    const zIndex = saved?.zIndex ?? 4;
-    const inner = (
-      <Caption
-        cW={cW}
-        cH={cH}
-        slide={slide}
-        theme={theme}
-        locale={locale}
-        editable={editable}
-        edit={edit}
-        align={captionRect.align || "center"}
-        inverted={inverted}
-        onFocus={() => edit?.onSelectElement?.("caption")}
-      />
-    );
+  function renderCaptionPart(id: "label" | "headline", rect: Rect & { align?: "center" | "left" }) {
+    const saved = slide.transforms?.[id];
+    const legacyCaption = !saved ? slide.transforms?.caption : undefined;
+    const rotation = saved?.rotation ?? legacyCaption?.rotation ?? 0;
+    const zIndex = saved?.zIndex ?? legacyCaption?.zIndex ?? defaultElementZ(id);
     return (
       <Movable
-        rect={toGlobal(captionRect)}
+        rect={toGlobal(rect)}
         boundsW={boundsW}
         boundsH={boundsH}
         editable={editable}
@@ -1005,7 +1056,7 @@ function SlideElements({
         rotation={rotation}
         onChange={(t) =>
           edit?.onElementChange?.(
-            "caption",
+            id,
             toLocal({
               ...t,
               rotation: t.rotation ?? rotation,
@@ -1014,12 +1065,24 @@ function SlideElements({
           )
         }
         zIndex={zIndex}
-        selected={selectedElementId === "caption"}
-        onSelect={() => edit?.onSelectElement?.("caption")}
+        selected={selectedElementId === id}
+        onSelect={() => edit?.onSelectElement?.(id)}
         allowOverflow={allowCrossScreen}
       >
         <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "flex-start" }}>
-          {inner}
+          <CaptionPart
+            part={id}
+            cW={cW}
+            cH={cH}
+            slide={slide}
+            theme={theme}
+            locale={locale}
+            editable={editable}
+            edit={edit}
+            align={rect.align || "center"}
+            inverted={inverted}
+            onFocus={() => edit?.onSelectElement?.(id)}
+          />
         </div>
       </Movable>
     );
@@ -1141,7 +1204,8 @@ function SlideElements({
           { opacity: 0.85 },
         )}
       {deviceRect && renderDevice("device", deviceRect, screenshot)}
-      {renderCaption()}
+      {labelRect && renderCaptionPart("label", labelRect)}
+      {headlineRect && renderCaptionPart("headline", headlineRect)}
       {(slide.textElements || []).map(renderTextElement)}
     </>
   );

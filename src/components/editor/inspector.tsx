@@ -67,7 +67,9 @@ type Props = {
 };
 
 const ELEMENT_LABEL: Record<BuiltInElementId, string> = {
-  caption: "Headline",
+  caption: "Caption group",
+  label: "Label",
+  headline: "Headline",
   device: "Device",
   deviceSecondary: "Back device",
 };

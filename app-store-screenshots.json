@@ -7,7 +7,7 @@
     "ko",
     "en"
   ],
-  "locale": "en",
+  "locale": "ko",
   "device": "iphone",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
@@ -27,12 +27,20 @@
         "screenshot": "/screenshots/apple/iphone/{locale}/01.png",
         "transforms": {
           "caption": {
-            "x": 105.60000000000001,
-            "y": 258.12,
-            "width": 1108.8,
-            "height": 803.04,
+            "x": -58.39468999186588,
+            "y": 704.6359771384367,
+            "width": 1029,
+            "height": 764,
             "rotation": 0,
             "zIndex": 4
+          },
+          "device": {
+            "x": 896.8790365256896,
+            "y": 525.4541962342676,
+            "width": 1002,
+            "height": 2041,
+            "rotation": 15,
+            "zIndex": 3
           }
         },
         "background": {
@@ -40,16 +48,16 @@
           "decorations": false,
           "color": "#ffffff",
           "color2": "#DBEAFE",
-          "angle": 47
+          "angle": 62
         },
         "typography": {
           "labelFontSize": 119,
           "headlineFontSize": 148,
           "locales": {
             "en": {
-              "headlineFontSize": 189,
               "labelFontFamily": "inter",
-              "headlineFontFamily": "manrope"
+              "headlineFontFamily": "manrope",
+              "headlineFontSize": 189
             },
             "de": {
               "labelFontFamily": "inter",
