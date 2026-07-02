@@ -39,6 +39,7 @@ export function ScreenshotEditor() {
   const [selectedElement, setSelectedElement] = React.useState<SelectedElement | null>(null);
   const [exporting, setExporting] = React.useState<string | null>(null);
   const [ready, setReady] = React.useState(false);
+  const [imageCacheVersion, setImageCacheVersion] = React.useState(0);
   const [exportLocaleOverride, setExportLocaleOverride] = React.useState<string | null>(null);
   const [exportSlideIndex, setExportSlideIndex] = React.useState(0);
   const exportRef = React.useRef<HTMLDivElement | null>(null);
@@ -98,9 +99,17 @@ export function ScreenshotEditor() {
 
   React.useEffect(() => {
     if (!hydrated) return;
-    preloadImages(assetPaths).finally(() => setReady(true));
+    let cancelled = false;
+    preloadImages(assetPaths).finally(() => {
+      if (cancelled) return;
+      setImageCacheVersion((version) => version + 1);
+      setReady(true);
+    });
     // assetPaths is derived from assetSig; depending on the string keeps the
     // effect from re-firing when slidesByDevice churns without path changes.
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hydrated, assetSig]);
 
@@ -414,6 +423,15 @@ export function ScreenshotEditor() {
       requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
     });
 
+  async function preloadAndRefreshExportImages(
+    paths: string[],
+    options: { retryFailed?: boolean } = {},
+  ) {
+    await preloadImages(paths, options);
+    setImageCacheVersion((version) => version + 1);
+    await waitForPaint();
+  }
+
   async function waitForImages(root: HTMLElement): Promise<string[]> {
     const images = Array.from(root.querySelectorAll("img"));
     const failed: string[] = [];
@@ -462,8 +480,7 @@ export function ScreenshotEditor() {
       return;
     }
     const locales = state.locales;
-    await preloadImages(assetPaths, { retryFailed: true });
-    await waitForPaint();
+    await preloadAndRefreshExportImages(assetPaths, { retryFailed: true });
 
     const missingScreens = currentSlides
       .map((slide, index) => ({ slide, index }))
@@ -530,7 +547,7 @@ export function ScreenshotEditor() {
           }
           try {
             const requiredAssetPaths = requiredAssetPathsForSlide(state.device, slide, locale, state.appIcon);
-            await preloadImages(requiredAssetPaths, { retryFailed: true });
+            await preloadAndRefreshExportImages(requiredAssetPaths, { retryFailed: true });
             const failedAssetPaths = requiredAssetPaths.filter((path) => didFail(path));
             if (failedAssetPaths.length) {
               throw new Error(`Screenshot files could not be loaded: ${failedAssetPaths.join(", ")}`);
@@ -785,6 +802,7 @@ export function ScreenshotEditor() {
               left: -99999,
               top: 0,
             }}
+            data-image-cache-version={imageCacheVersion}
           >
             <div
               style={{
