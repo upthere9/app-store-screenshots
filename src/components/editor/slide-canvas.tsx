@@ -236,7 +236,7 @@ function captionTypographyFor(slide: Slide, locale: string, unit: number) {
     labelFontSize: clampFontSize(
       localeTypography.labelFontSize ?? base.labelFontSize ?? defaultLabelSize,
       unit * 0.018,
-      unit * 0.09,
+      unit * 0.14,
     ),
     headlineFontSize: clampFontSize(
       localeTypography.headlineFontSize ?? base.headlineFontSize ?? defaultHeadlineSize,

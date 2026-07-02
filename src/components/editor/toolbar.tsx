@@ -6,6 +6,7 @@ import {
   Cloud,
   Download,
   Languages,
+  Plus,
   RotateCcw,
   UnfoldHorizontal,
   Upload,
@@ -32,6 +33,7 @@ import {
   supportsLandscape,
 } from "@/lib/constants";
 import { detectPlatform } from "@/lib/defaults";
+import { normalizeLocaleCode, normalizeLocaleList } from "@/lib/localization-import";
 import type { Device, Orientation } from "@/lib/types";
 
 type Props = {
@@ -297,15 +299,45 @@ function LocalizationDialog({
   busy: boolean;
 }) {
   const [draft, setDraft] = React.useState(locales.join(", "));
+  const [newLocale, setNewLocale] = React.useState("");
   const [importError, setImportError] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+  const draftLocales = React.useMemo(() => normalizeLocaleList(draft), [draft]);
 
   React.useEffect(() => {
     if (open) {
       setDraft(locales.join(", "));
+      setNewLocale("");
       setImportError(null);
     }
   }, [locales, open]);
+
+  function setDraftLocales(nextLocales: string[]) {
+    setDraft(normalizeLocaleList(nextLocales).join(", "));
+  }
+
+  function addLocaleCode(code: string) {
+    const locale = normalizeLocaleCode(code);
+    if (!locale) {
+      setImportError("Enter a valid locale code, like de, es-MX, pt-BR, or zh-CN");
+      return;
+    }
+    setDraftLocales([...draftLocales, locale]);
+    setNewLocale("");
+    setImportError(null);
+  }
+
+  function removeLocaleCode(localeToRemove: string) {
+    setDraftLocales(draftLocales.filter((code) => code !== localeToRemove));
+  }
+
+  function addRecommendedLocales() {
+    setDraftLocales([
+      ...draftLocales,
+      ...RECOMMENDED_LOCALES.map((locale) => locale.code),
+    ]);
+    setImportError(null);
+  }
 
   async function handleFile(file: File | undefined) {
     if (!file) return;
@@ -336,6 +368,74 @@ function LocalizationDialog({
               placeholder="ko, en, ja, de, fr, es-MX, hi"
               disabled={busy}
             />
+          </div>
+
+          <div className="space-y-2 rounded-md border bg-muted/30 p-2">
+            <div className="flex gap-2">
+              <Input
+                value={newLocale}
+                onChange={(event) => setNewLocale(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    event.preventDefault();
+                    addLocaleCode(newLocale);
+                  }
+                }}
+                placeholder="Add code, e.g. pt-BR"
+                disabled={busy}
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => addLocaleCode(newLocale)}
+                disabled={busy}
+              >
+                <Plus className="h-4 w-4" />
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {draftLocales.map((code) => (
+                <button
+                  key={code}
+                  type="button"
+                  className="rounded border bg-background px-2 py-1 text-xs font-medium hover:bg-muted disabled:opacity-50"
+                  onClick={() => removeLocaleCode(code)}
+                  disabled={busy}
+                  title={`Remove ${code}`}
+                >
+                  {code}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {RECOMMENDED_LOCALES.map((item) => (
+                <Button
+                  key={item.code}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  onClick={() => addLocaleCode(item.code)}
+                  disabled={busy || draftLocales.includes(item.code)}
+                  title={item.name}
+                >
+                  {item.code}
+                </Button>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-2 text-xs"
+                onClick={addRecommendedLocales}
+                disabled={busy}
+              >
+                Add recommended
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-1.5">
@@ -397,10 +497,10 @@ function LocalizationDialog({
                 type="button"
                 size="sm"
                 onClick={() => {
-                  setLocales(draft.split(/[\s,]+/));
+                  setLocales(draftLocales);
                   onOpenChange(false);
                 }}
-                disabled={busy}
+                disabled={busy || draftLocales.length === 0}
               >
                 Apply
               </Button>
@@ -411,6 +511,20 @@ function LocalizationDialog({
     </Dialog>
   );
 }
+
+const RECOMMENDED_LOCALES = [
+  { code: "de", name: "German" },
+  { code: "es-MX", name: "Spanish (Mexico)" },
+  { code: "es", name: "Spanish" },
+  { code: "en", name: "English" },
+  { code: "hi", name: "Hindi" },
+  { code: "zh-CN", name: "Chinese Simplified" },
+  { code: "ko", name: "Korean" },
+  { code: "ja", name: "Japanese" },
+  { code: "pt-BR", name: "Portuguese (Brazil)" },
+  { code: "id", name: "Indonesian" },
+  { code: "vi", name: "Vietnamese" },
+] as const;
 
 function SaveStatus({ savedAt, saveError }: { savedAt: number | null; saveError: string | null }) {
   const [, setTick] = React.useState(0);

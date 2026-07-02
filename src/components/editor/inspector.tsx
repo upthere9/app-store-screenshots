@@ -376,7 +376,7 @@ function AppearancePanel({
           label="Label size"
           value={defaultLabelSize}
           min={Math.round(unit * 0.024)}
-          max={Math.round(unit * 0.09)}
+          max={Math.round(unit * 0.14)}
           step={1}
           onChange={(value) => patchDefaultTypography({ labelFontSize: value })}
           onReset={() => patchDefaultTypography({ labelFontSize: undefined })}
@@ -440,7 +440,7 @@ function AppearancePanel({
           label="Label size"
           value={localeLabelSize}
           min={Math.round(unit * 0.024)}
-          max={Math.round(unit * 0.09)}
+          max={Math.round(unit * 0.14)}
           step={1}
           onChange={(value) =>
             patchLocaleTypography({

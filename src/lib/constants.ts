@@ -156,6 +156,11 @@ export const FONT_OPTIONS = [
     stack: 'Inter, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   {
+    id: "noto-sans-latin",
+    name: "Noto Sans Latin",
+    stack: '"Noto Sans", Inter, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
+  {
     id: "manrope",
     name: "Manrope",
     stack: 'Manrope, "Avenir Next", Inter, "Helvetica Neue", Arial, sans-serif',
@@ -169,6 +174,11 @@ export const FONT_OPTIONS = [
     id: "poppins",
     name: "Poppins",
     stack: 'Poppins, "Avenir Next", "Helvetica Neue", Arial, sans-serif',
+  },
+  {
+    id: "be-vietnam-pro",
+    name: "Be Vietnam Pro",
+    stack: '"Be Vietnam Pro", "Noto Sans", Inter, "Helvetica Neue", Arial, sans-serif',
   },
   {
     id: "rounded-display",

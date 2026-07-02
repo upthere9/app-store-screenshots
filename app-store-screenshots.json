@@ -47,7 +47,49 @@
           "headlineFontSize": 148,
           "locales": {
             "en": {
-              "headlineFontSize": 189
+              "headlineFontSize": 189,
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "de": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "es-MX": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "montserrat"
+            },
+            "es": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "manrope"
+            },
+            "hi": {
+              "labelFontFamily": "devanagari",
+              "headlineFontFamily": "devanagari"
+            },
+            "zh-CN": {
+              "labelFontFamily": "chinese-simplified",
+              "headlineFontFamily": "chinese-simplified"
+            },
+            "ko": {
+              "labelFontFamily": "korean-sans",
+              "headlineFontFamily": "korean-display"
+            },
+            "ja": {
+              "labelFontFamily": "japanese-sans",
+              "headlineFontFamily": "japanese-sans"
+            },
+            "pt-BR": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "id": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "vi": {
+              "labelFontFamily": "be-vietnam-pro",
+              "headlineFontFamily": "be-vietnam-pro"
             }
           }
         }
@@ -81,6 +123,54 @@
             "rotation": 0,
             "zIndex": 2
           }
+        },
+        "typography": {
+          "locales": {
+            "de": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "es-MX": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "montserrat"
+            },
+            "es": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "manrope"
+            },
+            "en": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "hi": {
+              "labelFontFamily": "devanagari",
+              "headlineFontFamily": "devanagari"
+            },
+            "zh-CN": {
+              "labelFontFamily": "chinese-simplified",
+              "headlineFontFamily": "chinese-simplified"
+            },
+            "ko": {
+              "labelFontFamily": "korean-sans",
+              "headlineFontFamily": "korean-display"
+            },
+            "ja": {
+              "labelFontFamily": "japanese-sans",
+              "headlineFontFamily": "japanese-sans"
+            },
+            "pt-BR": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "id": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "vi": {
+              "labelFontFamily": "be-vietnam-pro",
+              "headlineFontFamily": "be-vietnam-pro"
+            }
+          }
         }
       },
       {
@@ -113,6 +203,54 @@
             "rotation": 0,
             "zIndex": 3
           }
+        },
+        "typography": {
+          "locales": {
+            "de": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "es-MX": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "montserrat"
+            },
+            "es": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "manrope"
+            },
+            "en": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "hi": {
+              "labelFontFamily": "devanagari",
+              "headlineFontFamily": "devanagari"
+            },
+            "zh-CN": {
+              "labelFontFamily": "chinese-simplified",
+              "headlineFontFamily": "chinese-simplified"
+            },
+            "ko": {
+              "labelFontFamily": "korean-sans",
+              "headlineFontFamily": "korean-display"
+            },
+            "ja": {
+              "labelFontFamily": "japanese-sans",
+              "headlineFontFamily": "japanese-sans"
+            },
+            "pt-BR": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "id": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "vi": {
+              "labelFontFamily": "be-vietnam-pro",
+              "headlineFontFamily": "be-vietnam-pro"
+            }
+          }
         }
       },
       {
@@ -137,6 +275,54 @@
             "rotation": 0,
             "zIndex": 4
           }
+        },
+        "typography": {
+          "locales": {
+            "de": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "es-MX": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "montserrat"
+            },
+            "es": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "manrope"
+            },
+            "en": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "hi": {
+              "labelFontFamily": "devanagari",
+              "headlineFontFamily": "devanagari"
+            },
+            "zh-CN": {
+              "labelFontFamily": "chinese-simplified",
+              "headlineFontFamily": "chinese-simplified"
+            },
+            "ko": {
+              "labelFontFamily": "korean-sans",
+              "headlineFontFamily": "korean-display"
+            },
+            "ja": {
+              "labelFontFamily": "japanese-sans",
+              "headlineFontFamily": "japanese-sans"
+            },
+            "pt-BR": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "id": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "vi": {
+              "labelFontFamily": "be-vietnam-pro",
+              "headlineFontFamily": "be-vietnam-pro"
+            }
+          }
         }
       },
       {
@@ -150,7 +336,55 @@
           "ko": "알림, 통계,\n연차계산까지",
           "en": "Alerts, stats,\nleave days"
         },
-        "screenshot": "/screenshots/apple/iphone/{locale}/05.png"
+        "screenshot": "/screenshots/apple/iphone/{locale}/05.png",
+        "typography": {
+          "locales": {
+            "de": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "es-MX": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "montserrat"
+            },
+            "es": {
+              "labelFontFamily": "montserrat",
+              "headlineFontFamily": "manrope"
+            },
+            "en": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "hi": {
+              "labelFontFamily": "devanagari",
+              "headlineFontFamily": "devanagari"
+            },
+            "zh-CN": {
+              "labelFontFamily": "chinese-simplified",
+              "headlineFontFamily": "chinese-simplified"
+            },
+            "ko": {
+              "labelFontFamily": "korean-sans",
+              "headlineFontFamily": "korean-display"
+            },
+            "ja": {
+              "labelFontFamily": "japanese-sans",
+              "headlineFontFamily": "japanese-sans"
+            },
+            "pt-BR": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "id": {
+              "labelFontFamily": "inter",
+              "headlineFontFamily": "manrope"
+            },
+            "vi": {
+              "labelFontFamily": "be-vietnam-pro",
+              "headlineFontFamily": "be-vietnam-pro"
+            }
+          }
+        }
       }
     ],
     "android": [],
