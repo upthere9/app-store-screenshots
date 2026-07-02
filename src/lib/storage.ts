@@ -7,6 +7,7 @@ import type {
   CaptionTypography,
   Device,
   ElementTransform,
+  ImageElement,
   ProjectState,
   Slide,
   SlideBackground,
@@ -39,6 +40,28 @@ function cleanTransform(value: unknown): ElementTransform | undefined {
   };
 }
 
+function cleanLineHeight(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return Math.round(Math.max(0.6, Math.min(3, value)) * 100) / 100;
+}
+
+function cleanOpacity(value: unknown): number | undefined {
+  if (typeof value !== "number" || !Number.isFinite(value)) return undefined;
+  return Math.round(Math.max(0, Math.min(1, value)) * 100) / 100;
+}
+
+function cleanTextAlign(value: unknown): "left" | "center" | "right" | undefined {
+  return value === "left" || value === "center" || value === "right" ? value : undefined;
+}
+
+function cleanImageFit(value: unknown): "contain" | "cover" | "fill" | undefined {
+  return value === "contain" || value === "cover" || value === "fill" ? value : undefined;
+}
+
+function cleanColor(value: unknown): string | undefined {
+  return typeof value === "string" && value.trim() ? value : undefined;
+}
+
 function cleanTextElement(value: unknown): TextElement | undefined {
   if (!value || typeof value !== "object") return undefined;
   const raw = value as Partial<TextElement>;
@@ -56,10 +79,26 @@ function cleanTextElement(value: unknown): TextElement | undefined {
       ? { fontWeight: raw.fontWeight }
       : {}),
     ...(typeof raw.fontFamily === "string" ? { fontFamily: raw.fontFamily } : {}),
-    ...(typeof raw.color === "string" ? { color: raw.color } : {}),
-    ...(raw.align === "left" || raw.align === "center" || raw.align === "right"
-      ? { align: raw.align }
-      : {}),
+    ...(cleanColor(raw.color) ? { color: cleanColor(raw.color) } : {}),
+    ...(cleanTextAlign(raw.align) ? { align: cleanTextAlign(raw.align) } : {}),
+    ...(cleanLineHeight(raw.lineHeight) ? { lineHeight: cleanLineHeight(raw.lineHeight) } : {}),
+  };
+}
+
+function cleanImageElement(value: unknown): ImageElement | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const raw = value as Partial<ImageElement>;
+  if (typeof raw.id !== "string" || !raw.id.trim()) return undefined;
+  const transform = cleanTransform(raw.transform);
+  if (!transform || typeof raw.src !== "string") return undefined;
+  const opacity = cleanOpacity(raw.opacity);
+  return {
+    id: raw.id,
+    src: raw.src,
+    transform,
+    ...(typeof raw.alt === "string" ? { alt: raw.alt } : {}),
+    ...(cleanImageFit(raw.fit) ? { fit: cleanImageFit(raw.fit) } : {}),
+    ...(typeof opacity === "number" ? { opacity } : {}),
   };
 }
 
@@ -96,6 +135,10 @@ function cleanFontSize(value: unknown): number | undefined {
 function cleanCaptionTypography(value: unknown): CaptionTypography | undefined {
   if (!value || typeof value !== "object") return undefined;
   const raw = value as Partial<CaptionTypography>;
+  const labelFontSize = cleanFontSize(raw.labelFontSize);
+  const headlineFontSize = cleanFontSize(raw.headlineFontSize);
+  const labelLineHeight = cleanLineHeight(raw.labelLineHeight);
+  const headlineLineHeight = cleanLineHeight(raw.headlineLineHeight);
   const typography: CaptionTypography = {
     ...(typeof raw.labelFontFamily === "string" && raw.labelFontFamily.trim()
       ? { labelFontFamily: raw.labelFontFamily }
@@ -103,10 +146,14 @@ function cleanCaptionTypography(value: unknown): CaptionTypography | undefined {
     ...(typeof raw.headlineFontFamily === "string" && raw.headlineFontFamily.trim()
       ? { headlineFontFamily: raw.headlineFontFamily }
       : {}),
-    ...(cleanFontSize(raw.labelFontSize) ? { labelFontSize: cleanFontSize(raw.labelFontSize) } : {}),
-    ...(cleanFontSize(raw.headlineFontSize)
-      ? { headlineFontSize: cleanFontSize(raw.headlineFontSize) }
-      : {}),
+    ...(labelFontSize ? { labelFontSize } : {}),
+    ...(headlineFontSize ? { headlineFontSize } : {}),
+    ...(labelLineHeight ? { labelLineHeight } : {}),
+    ...(headlineLineHeight ? { headlineLineHeight } : {}),
+    ...(cleanColor(raw.labelColor) ? { labelColor: cleanColor(raw.labelColor) } : {}),
+    ...(cleanColor(raw.headlineColor) ? { headlineColor: cleanColor(raw.headlineColor) } : {}),
+    ...(cleanTextAlign(raw.labelAlign) ? { labelAlign: cleanTextAlign(raw.labelAlign) } : {}),
+    ...(cleanTextAlign(raw.headlineAlign) ? { headlineAlign: cleanTextAlign(raw.headlineAlign) } : {}),
   };
   return Object.keys(typography).length ? typography : undefined;
 }
@@ -143,6 +190,9 @@ function migrateSlide(slide: Slide): Slide {
   const textElements = Array.isArray(slide.textElements)
     ? slide.textElements.map(cleanTextElement).filter((t): t is TextElement => !!t)
     : undefined;
+  const imageElements = Array.isArray(slide.imageElements)
+    ? slide.imageElements.map(cleanImageElement).filter((image): image is ImageElement => !!image)
+    : undefined;
   const background = cleanBackground(slide.background);
   const typography = cleanTypography(slide.typography);
 
@@ -155,6 +205,7 @@ function migrateSlide(slide: Slide): Slide {
     ...(typography ? { typography } : { typography: undefined }),
     ...(transforms && Object.keys(transforms).length > 0 ? { transforms } : { transforms: undefined }),
     ...(textElements && textElements.length > 0 ? { textElements } : { textElements: undefined }),
+    ...(imageElements && imageElements.length > 0 ? { imageElements } : { imageElements: undefined }),
   };
 }
 

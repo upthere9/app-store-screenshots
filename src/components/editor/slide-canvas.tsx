@@ -8,9 +8,11 @@ import type {
   Device,
   ElementId,
   ElementTransform,
+  ImageElement,
   Orientation,
   SelectedElement,
   Slide,
+  TextAlign,
   TextElement,
   Theme,
 } from "@/lib/types";
@@ -27,7 +29,13 @@ import {
   tabletLW,
   tabletPW,
 } from "@/lib/constants";
-import { toTextElementId } from "@/lib/elements";
+import {
+  imageElementKey,
+  isImageElementId,
+  isTextElementId,
+  toImageElementId,
+  toTextElementId,
+} from "@/lib/elements";
 import { img } from "@/lib/image-cache";
 import { pickText, resolveScreenshot } from "@/lib/locale";
 import {
@@ -243,6 +251,12 @@ function captionTypographyFor(slide: Slide, locale: string, unit: number) {
       unit * 0.045,
       unit * 0.18,
     ),
+    labelLineHeight: localeTypography.labelLineHeight ?? base.labelLineHeight ?? 1.12,
+    headlineLineHeight: localeTypography.headlineLineHeight ?? base.headlineLineHeight ?? 0.96,
+    labelColor: localeTypography.labelColor || base.labelColor,
+    headlineColor: localeTypography.headlineColor || base.headlineColor,
+    labelAlign: localeTypography.labelAlign || base.labelAlign,
+    headlineAlign: localeTypography.headlineAlign || base.headlineAlign,
   };
 }
 
@@ -267,7 +281,7 @@ function CaptionPart({
   locale: string;
   editable?: boolean;
   edit?: EditHandlers;
-  align?: "center" | "left";
+  align?: TextAlign;
   inverted?: boolean;
   onFocus?: () => void;
 }) {
@@ -276,10 +290,12 @@ function CaptionPart({
   const typography = captionTypographyFor(slide, locale, unit);
 
   if (part === "label") {
+    const lineHeight = typography.labelLineHeight;
     return (
       <EditableText
         value={pickText(slide.label, locale)}
         editable={editable}
+        multiline
         onChange={edit?.onLabelChange}
         onFocus={onFocus}
         placeholder="LABEL"
@@ -289,15 +305,17 @@ function CaptionPart({
           fontSize: typography.labelFontSize,
           fontWeight: 700,
           letterSpacing: 0,
-          color: theme.accent,
-          textAlign: align,
+          color: typography.labelColor || theme.accent,
+          lineHeight,
+          textAlign: typography.labelAlign || align,
           textTransform: "uppercase",
-          minHeight: typography.labelFontSize * 1.12,
+          minHeight: typography.labelFontSize * lineHeight,
         }}
       />
     );
   }
 
+  const headlineLineHeight = typography.headlineLineHeight;
   return (
     <EditableText
       value={pickText(slide.headline, locale)}
@@ -311,10 +329,10 @@ function CaptionPart({
         fontFamily: fontStack(typography.headlineFontFamily),
         fontSize: typography.headlineFontSize,
         fontWeight: 700,
-        lineHeight: 0.96,
+        lineHeight: headlineLineHeight,
         letterSpacing: 0,
-        color: fg,
-        textAlign: align,
+        color: typography.headlineColor || fg,
+        textAlign: typography.headlineAlign || align,
       }}
     />
   );
@@ -387,17 +405,17 @@ function Blob({
 
 type Rect = { x: number; y: number; width: number; height: number };
 type LayoutRects = {
-  caption?: Rect & { align?: "center" | "left" };
-  label?: Rect & { align?: "center" | "left" };
-  headline?: Rect & { align?: "center" | "left" };
+  caption?: Rect & { align?: TextAlign };
+  label?: Rect & { align?: TextAlign };
+  headline?: Rect & { align?: TextAlign };
   device?: Rect;
   deviceSecondary?: Rect;
 };
 
 function splitCaptionRect(
-  caption: Rect & { align?: "center" | "left" },
+  caption: Rect & { align?: TextAlign },
   part: "label" | "headline",
-): Rect & { align?: "center" | "left" } {
+): Rect & { align?: TextAlign } {
   const labelH = caption.height * 0.22;
   const gap = caption.height * 0.07;
   if (part === "label") {
@@ -419,7 +437,7 @@ function splitCaptionRect(
 }
 
 function withCaption(
-  caption: Rect & { align?: "center" | "left" },
+  caption: Rect & { align?: TextAlign },
   rest: Omit<LayoutRects, "caption" | "label" | "headline"> = {},
 ): LayoutRects {
   return {
@@ -535,7 +553,7 @@ function rectFor(
   id: BuiltInElementId,
   slide: Slide,
   defaults: LayoutRects,
-): (Rect & { align?: "center" | "left" }) | undefined {
+): (Rect & { align?: TextAlign }) | undefined {
   const saved = slide.transforms?.[id];
   const def = defaults[id];
   if (!saved && (id === "label" || id === "headline") && slide.transforms?.caption) {
@@ -554,7 +572,7 @@ function rectFor(
     y: saved.y,
     width: saved.width,
     height: saved.height,
-    align: (def as { align?: "center" | "left" } | undefined)?.align,
+    align: (def as { align?: TextAlign } | undefined)?.align,
   };
 }
 
@@ -574,10 +592,15 @@ export function getElementTransform(
   orientation: Orientation,
   id: ElementId,
 ): ElementTransform | undefined {
-  if (id.startsWith("text:")) {
+  if (isTextElementId(id)) {
     const textId = id.slice("text:".length);
     const textElement = slide.textElements?.find((element) => element.id === textId);
     return textElement?.transform;
+  }
+  if (isImageElementId(id)) {
+    const imageId = imageElementKey(id);
+    const imageElement = slide.imageElements?.find((element) => element.id === imageId);
+    return imageElement?.transform;
   }
   const { defaults } = getSlideGeometry(slide, device, orientation);
   const rect = rectFor(id as BuiltInElementId, slide, defaults);
@@ -710,6 +733,7 @@ export function DeckCanvas({
           return (
             <div
               key={`${slide.id}-feature`}
+              data-slide-id={slide.id}
               onMouseDown={(e) => {
                 if (!editable || e.defaultPrevented) return;
                 edit?.onSelectScreen?.(slide.id);
@@ -743,6 +767,7 @@ export function DeckCanvas({
         return (
           <div
             key={`${slide.id}-bg`}
+            data-slide-id={slide.id}
             onMouseDown={(e) => {
               if (!editable || e.defaultPrevented) return;
               edit?.onSelectScreen?.(slide.id);
@@ -799,10 +824,21 @@ export function DeckCanvas({
             allowCrossScreen={connectedCanvas}
           />
         );
-        if (connectedCanvas) return elements;
+        if (connectedCanvas) {
+          // No per-slide clipping box in connected mode (elements can overflow
+          // across screen boundaries), but we still tag a wrapper so export can
+          // scope image-readiness checks — this div is unstyled, so it doesn't
+          // affect the absolute positioning coordinate system used by Movable.
+          return (
+            <div key={`${slide.id}-elements-connected`} data-slide-id={slide.id}>
+              {elements}
+            </div>
+          );
+        }
         return (
           <div
             key={`${slide.id}-elements-isolated`}
+            data-slide-id={slide.id}
             style={{
               position: "absolute",
               left: index * cW,
@@ -1041,7 +1077,7 @@ function SlideElements({
     return { ...t, x: t.x - screenX };
   }
 
-  function renderCaptionPart(id: "label" | "headline", rect: Rect & { align?: "center" | "left" }) {
+  function renderCaptionPart(id: "label" | "headline", rect: Rect & { align?: TextAlign }) {
     const saved = slide.transforms?.[id];
     const legacyCaption = !saved ? slide.transforms?.caption : undefined;
     const rotation = saved?.rotation ?? legacyCaption?.rotation ?? 0;
@@ -1125,6 +1161,74 @@ function SlideElements({
     );
   }
 
+  function renderImageElement(imageElement: ImageElement, index: number) {
+    const elementId = toImageElementId(imageElement.id);
+    const rect = imageElement.transform;
+    const rotation = rect.rotation ?? 0;
+    const zIndex = rect.zIndex ?? 4 + index;
+    const src = resolveScreenshot(imageElement.src, locale);
+    const displaySrc = img(src);
+    const objectFit = imageElement.fit === "fill" ? "fill" : imageElement.fit || "contain";
+    return (
+      <Movable
+        key={imageElement.id}
+        rect={toGlobal(rect)}
+        boundsW={boundsW}
+        boundsH={boundsH}
+        editable={editable}
+        previewScale={previewScale}
+        rotation={rotation}
+        onChange={(t) =>
+          edit?.onElementChange?.(
+            elementId,
+            toLocal({
+              ...t,
+              rotation: t.rotation ?? rotation,
+              zIndex: t.zIndex ?? zIndex,
+            }),
+          )
+        }
+        zIndex={zIndex}
+        selected={selectedElementId === elementId}
+        onSelect={() => edit?.onSelectElement?.(elementId)}
+        allowOverflow={allowCrossScreen}
+      >
+        {displaySrc ? (
+          <img
+            src={displaySrc}
+            alt={imageElement.alt || ""}
+            draggable={false}
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "block",
+              objectFit,
+              opacity: imageElement.opacity ?? 1,
+              pointerEvents: "none",
+            }}
+          />
+        ) : hideEmpty ? null : (
+          <div
+            style={{
+              width: "100%",
+              height: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              border: Math.max(2, Math.min(cW, cH) * 0.002) + "px dashed rgba(15,23,42,0.28)",
+              borderRadius: Math.min(cW, cH) * 0.018,
+              color: "rgba(15,23,42,0.45)",
+              fontSize: Math.min(cW, cH) * 0.025,
+              fontWeight: 700,
+            }}
+          >
+            Image
+          </div>
+        )}
+      </Movable>
+    );
+  }
+
   function renderTextElement(textElement: TextElement, index: number) {
     const elementId = toTextElementId(textElement.id);
     const rect = textElement.transform;
@@ -1184,7 +1288,7 @@ function SlideElements({
               fontFamily: family,
               fontSize: textElement.fontSize ?? Math.min(cW, cH) * 0.06,
               fontWeight: textElement.fontWeight ?? 700,
-              lineHeight: 1.05,
+              lineHeight: textElement.lineHeight ?? 1.05,
               textAlign: textElement.align ?? "center",
               textShadow: inverted ? "0 2px 18px rgba(0,0,0,0.22)" : "0 2px 18px rgba(255,255,255,0.2)",
             }}
@@ -1204,6 +1308,7 @@ function SlideElements({
           { opacity: 0.85 },
         )}
       {deviceRect && renderDevice("device", deviceRect, screenshot)}
+      {(slide.imageElements || []).map(renderImageElement)}
       {labelRect && renderCaptionPart("label", labelRect)}
       {headlineRect && renderCaptionPart("headline", headlineRect)}
       {(slide.textElements || []).map(renderTextElement)}

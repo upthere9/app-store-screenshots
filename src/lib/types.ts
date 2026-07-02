@@ -32,7 +32,10 @@ export type ElementTransform = {
 
 export type BuiltInElementId = "caption" | "label" | "headline" | "device" | "deviceSecondary";
 export type TextElementId = `text:${string}`;
-export type ElementId = BuiltInElementId | TextElementId;
+export type ImageElementId = `image:${string}`;
+export type ElementId = BuiltInElementId | TextElementId | ImageElementId;
+export type TextAlign = "left" | "center" | "right";
+export type ImageFit = "contain" | "cover" | "fill";
 
 export type SelectedElement = {
   slideId: string;
@@ -53,7 +56,17 @@ export type TextElement = {
   fontWeight?: number;
   fontFamily?: string;
   color?: string;
-  align?: "left" | "center" | "right";
+  align?: TextAlign;
+  lineHeight?: number;
+};
+
+export type ImageElement = {
+  id: string;
+  src: string;
+  alt?: string;
+  transform: ElementTransform;
+  fit?: ImageFit;
+  opacity?: number;
 };
 
 export type CaptionTypography = {
@@ -61,6 +74,12 @@ export type CaptionTypography = {
   headlineFontFamily?: string;
   labelFontSize?: number;
   headlineFontSize?: number;
+  labelLineHeight?: number;
+  headlineLineHeight?: number;
+  labelColor?: string;
+  headlineColor?: string;
+  labelAlign?: TextAlign;
+  headlineAlign?: TextAlign;
 };
 
 export type SlideTypography = CaptionTypography & {
@@ -89,6 +108,7 @@ export type Slide = {
   // Per-element overrides; when present, replaces layout default placement.
   transforms?: Partial<Record<BuiltInElementId, ElementTransform>>;
   textElements?: TextElement[];
+  imageElements?: ImageElement[];
 };
 
 export type ThemeId =

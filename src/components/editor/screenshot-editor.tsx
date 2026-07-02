@@ -1,16 +1,23 @@
 "use client";
 import * as React from "react";
 import JSZip from "jszip";
-import { toPng } from "html-to-image";
+import { getFontEmbedCSS, toPng } from "html-to-image";
 import { Toaster, toast } from "sonner";
 import {
+  type ExportSize,
   getExportSizes,
   hasTheme,
   supportsLandscape,
   themeById,
 } from "@/lib/constants";
 import { detectPlatform, nid } from "@/lib/defaults";
-import { isBuiltInElementId, isTextElementId, textElementKey } from "@/lib/elements";
+import {
+  imageElementKey,
+  isBuiltInElementId,
+  isImageElementId,
+  isTextElementId,
+  textElementKey,
+} from "@/lib/elements";
 import { didFail, hasCachedImage, preloadImages } from "@/lib/image-cache";
 import {
   buildLocalizationExport,
@@ -43,6 +50,14 @@ export function ScreenshotEditor() {
   const [exportLocaleOverride, setExportLocaleOverride] = React.useState<string | null>(null);
   const [exportSlideIndex, setExportSlideIndex] = React.useState(0);
   const exportRef = React.useRef<HTMLDivElement | null>(null);
+  // html-to-image re-scans every stylesheet and re-fetches every referenced
+  // font file on each toPng() call unless given a pre-computed fontEmbedCSS —
+  // with this project's multi-language Google Fonts import (hundreds of CJK
+  // subset files), that made every single capture redo the same font work.
+  // Font family choice can vary per locale, so we cache per locale (computed
+  // once when a locale's deck is rendered) rather than once for the whole
+  // export, trading a couple of recomputes for correctness.
+  const fontEmbedCssByLocale = React.useRef<Map<string, string>>(new Map());
 
   const currentSlides = state.slidesByDevice[state.device] || [];
   const activeSlide =
@@ -84,7 +99,8 @@ export function ScreenshotEditor() {
     // Preload every locale variant so bulk export doesn't race image loads.
     const allSlides: Slide[] = Object.values(state.slidesByDevice).flat();
     for (const s of allSlides) {
-      for (const raw of [s.screenshot, s.screenshotSecondary]) {
+      const imageSources = (s.imageElements || []).map((element) => element.src);
+      for (const raw of [s.screenshot, s.screenshotSecondary, ...imageSources]) {
         if (!raw || raw.startsWith("data:")) continue;
         if (raw.includes("{locale}")) {
           for (const loc of state.locales) paths.add(resolveScreenshot(raw, loc));
@@ -278,6 +294,15 @@ export function ScreenshotEditor() {
                 ),
               };
             }
+            if (isImageElementId(elementId)) {
+              const imageId = imageElementKey(elementId);
+              return {
+                ...slide,
+                imageElements: (slide.imageElements || []).map((element) =>
+                  element.id === imageId ? { ...element, transform } : element,
+                ),
+              };
+            }
             if (!isBuiltInElementId(elementId)) return slide;
             return {
               ...slide,
@@ -340,6 +365,11 @@ export function ScreenshotEditor() {
             ...element,
             id: nid(),
             text: { ...element.text },
+            transform: { ...element.transform },
+          })),
+          imageElements: src.imageElements?.map((element) => ({
+            ...element,
+            id: nid(),
             transform: { ...element.transform },
           })),
         };
@@ -432,8 +462,12 @@ export function ScreenshotEditor() {
     await waitForPaint();
   }
 
-  async function waitForImages(root: HTMLElement): Promise<string[]> {
-    const images = Array.from(root.querySelectorAll("img"));
+  async function waitForImages(roots: HTMLElement | HTMLElement[]): Promise<string[]> {
+    const rootList = Array.isArray(roots) ? roots : [roots];
+    // A slide's DOM is split across two sibling containers in DeckCanvas (a
+    // background/feature-graphic div and an elements div), so scoping to a
+    // single slide can require querying more than one root — take the union.
+    const images = rootList.flatMap((root) => Array.from(root.querySelectorAll("img")));
     const failed: string[] = [];
 
     await Promise.all(
@@ -468,18 +502,29 @@ export function ScreenshotEditor() {
     return failed;
   }
 
-  async function exportAll() {
+  async function exportAll(options?: { locales?: string[]; sizes?: ExportSize[] }) {
     if (!currentSlides.length) {
       toast.error("No screens to export");
       return;
     }
+    // Font choices may have changed since the last export ran.
+    fontEmbedCssByLocale.current.clear();
 
-    const sizes = getExportSizes(state.device, state.orientation);
+    const allSizes = getExportSizes(state.device, state.orientation);
+    const sizes = options?.sizes?.length
+      ? allSizes.filter((size) => options.sizes!.some((s) => s.label === size.label))
+      : allSizes;
     if (!sizes.length) {
       toast.error("Nothing to export");
       return;
     }
-    const locales = state.locales;
+    const locales = options?.locales?.length
+      ? state.locales.filter((l) => options.locales!.includes(l))
+      : state.locales;
+    if (!locales.length) {
+      toast.error("Nothing to export");
+      return;
+    }
     await preloadAndRefreshExportImages(assetPaths, { retryFailed: true });
 
     const missingScreens = currentSlides
@@ -532,6 +577,17 @@ export function ScreenshotEditor() {
       setExportLocaleOverride(locale);
       await waitForPaint();
 
+      // Computed once per locale (font family can vary by locale) and reused
+      // for every size × slide capture below — see fontEmbedCssByLocale.
+      if (!fontEmbedCssByLocale.current.has(locale) && exportRef.current) {
+        try {
+          fontEmbedCssByLocale.current.set(locale, await getFontEmbedCSS(exportRef.current));
+        } catch {
+          /* Fall back to per-capture embedding if this fails. */
+        }
+      }
+      const fontEmbedCSS = fontEmbedCssByLocale.current.get(locale);
+
       for (const size of sizes) {
         for (let i = 0; i < currentSlides.length; i++) {
           const slide = currentSlides[i];
@@ -547,7 +603,9 @@ export function ScreenshotEditor() {
           }
           try {
             const requiredAssetPaths = requiredAssetPathsForSlide(state.device, slide, locale, state.appIcon);
-            await preloadAndRefreshExportImages(requiredAssetPaths, { retryFailed: true });
+            if (requiredAssetPaths.some((path) => !hasCachedImage(path) || didFail(path))) {
+              await preloadAndRefreshExportImages(requiredAssetPaths, { retryFailed: true });
+            }
             const failedAssetPaths = requiredAssetPaths.filter((path) => didFail(path));
             if (failedAssetPaths.length) {
               throw new Error(`Screenshot files could not be loaded: ${failedAssetPaths.join(", ")}`);
@@ -556,12 +614,23 @@ export function ScreenshotEditor() {
             if (uncachedAssetPaths.length) {
               throw new Error(`Screenshot files were not ready for export: ${uncachedAssetPaths.join(", ")}`);
             }
-            const failedImages = await waitForImages(el);
+            // Only wait on images that can actually appear in this slide's
+            // captured viewport. Scanning the whole off-screen deck (every
+            // slide × every export unit) is O(slides) per unit and makes a
+            // single stuck/broken image anywhere in the deck abort every
+            // slide's export — not just its own. Connected-canvas mode still
+            // scans the whole deck since elements can overflow across screens.
+            const slideScopeEls = state.connectedCanvas
+              ? []
+              : (Array.from(
+                  el.querySelectorAll(`[data-slide-id="${slide.id}"]`),
+                ) as HTMLElement[]);
+            const failedImages = await waitForImages(slideScopeEls.length ? slideScopeEls : el);
             if (failedImages.length) {
               throw new Error(`Images did not load: ${failedImages.slice(0, 2).join(", ")}`);
             }
             await waitForPaint();
-            const dataUrl = await captureSlide(el, cW, cH, size.w, size.h);
+            const dataUrl = await captureSlide(el, cW, cH, size.w, size.h, fontEmbedCSS);
             const base64 = dataUrl.split(",")[1] || "";
             const filename = `${String(i + 1).padStart(2, "0")}-${slide.layout}.png`;
             const path = `${platform}/${state.device}/${size.w}x${size.h}/${locale}/${filename}`;
@@ -616,6 +685,7 @@ export function ScreenshotEditor() {
     sourceH: number,
     exportW: number,
     exportH: number,
+    fontEmbedCSS: string | undefined,
   ) {
     // html-to-image needs the node at (0,0). Let the library scale the source
     // canvas into the requested output dimensions; CSS transforms leave
@@ -643,6 +713,7 @@ export function ScreenshotEditor() {
         pixelRatio: 1,
         cacheBust: false,
         backgroundColor: "#ffffff",
+        ...(fontEmbedCSS != null ? { fontEmbedCSS } : {}),
       });
       return dataUrl;
     } finally {
@@ -865,6 +936,9 @@ function requiredAssetPathsForSlide(
   if (device === "iphone") paths.add("/mockup.png");
   if (device === "feature-graphic" && appIcon) paths.add(appIcon);
   for (const path of screenshotPathsForSlide(device, slide, locale)) paths.add(path);
+  for (const element of slide.imageElements || []) {
+    if (element.src) paths.add(resolveScreenshot(element.src, locale));
+  }
   return Array.from(paths).filter((path) => path && !path.startsWith("data:"));
 }
 

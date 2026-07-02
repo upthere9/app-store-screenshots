@@ -7,7 +7,7 @@
     "ko",
     "en"
   ],
-  "locale": "ko",
+  "locale": "en",
   "device": "iphone",
   "orientation": "portrait",
   "appIcon": "/app-icon.png",
@@ -17,14 +17,14 @@
         "id": "shiftking-calendar",
         "layout": "hero",
         "label": {
-          "ko": "캘린더",
-          "en": "CALENDAR"
+          "ko": "교대근무 달력",
+          "en": "SHIFT WORK\nCALENDAR"
         },
         "headline": {
-          "ko": "교대근무와 일정을\n한눈에",
-          "en": "Shifts, plans,\none calendar"
+          "ko": "근무와\n\n개인 일정을\n\n한번에\n",
+          "en": "Work\n&\n Life \nin one calendar"
         },
-        "screenshot": "/screenshots/apple/iphone/{locale}/01.png",
+        "screenshot": "/screenshots/uploaded/bf179872e89b9237.png",
         "transforms": {
           "caption": {
             "x": -58.39468999186588,
@@ -35,12 +35,28 @@
             "zIndex": 4
           },
           "device": {
-            "x": 896.8790365256896,
-            "y": 525.4541962342676,
+            "x": 904.5066961001576,
+            "y": 712.3318558087354,
             "width": 1002,
             "height": 2041,
             "rotation": 15,
             "zIndex": 3
+          },
+          "label": {
+            "x": 6.924443067930659,
+            "y": 332.54554176215015,
+            "width": 1303,
+            "height": 407,
+            "rotation": 0,
+            "zIndex": 4
+          },
+          "headline": {
+            "x": -27.793646423030253,
+            "y": 938.1002163763408,
+            "width": 1029,
+            "height": 1007,
+            "rotation": 0,
+            "zIndex": 4
           }
         },
         "background": {
@@ -51,8 +67,9 @@
           "angle": 62
         },
         "typography": {
-          "labelFontSize": 119,
+          "labelFontSize": 153,
           "headlineFontSize": 148,
+          "headlineLineHeight": 0.88,
           "locales": {
             "en": {
               "labelFontFamily": "inter",
@@ -81,7 +98,8 @@
             },
             "ko": {
               "labelFontFamily": "korean-sans",
-              "headlineFontFamily": "korean-display"
+              "headlineFontFamily": "korean-display",
+              "labelFontSize": 166
             },
             "ja": {
               "labelFontFamily": "japanese-sans",
@@ -106,20 +124,20 @@
         "id": "shiftking-rosters",
         "layout": "device-bottom",
         "label": {
-          "ko": "근무표",
-          "en": "ROSTERS"
+          "ko": "근무표를 \n직접 만들고 공유\n",
+          "en": "CREATE & SHARE"
         },
         "headline": {
-          "ko": "3000개 근무표\n바로 시작",
-          "en": "3,000+ rosters\nready to use"
+          "ko": "3,000개의 근무표\n",
+          "en": "3,000+ Shift Rosters\n\n"
         },
-        "screenshot": "/screenshots/apple/iphone/{locale}/02.png",
+        "screenshot": "/screenshots/uploaded/b9257316c2df10be.png",
         "transforms": {
           "device": {
-            "x": 153.1822478386166,
-            "y": 745.68,
-            "width": 1013.6355043227666,
-            "height": 2064.96,
+            "x": 427.777928217703,
+            "y": 1622.8608389066803,
+            "width": 110,
+            "height": 223,
             "rotation": 0,
             "zIndex": 1
           },
@@ -130,9 +148,28 @@
             "height": 803.0400000000001,
             "rotation": 0,
             "zIndex": 2
+          },
+          "headline": {
+            "x": 218.07053931325072,
+            "y": 494.80897367187964,
+            "width": 1109,
+            "height": 345,
+            "rotation": 0,
+            "zIndex": 2
+          },
+          "label": {
+            "x": 109.59996949774427,
+            "y": 249.43999475046581,
+            "width": 1109,
+            "height": 181,
+            "rotation": 0,
+            "zIndex": 2
           }
         },
         "typography": {
+          "labelFontSize": 125,
+          "headlineLineHeight": 1.06,
+          "labelColor": "#0061ff",
           "locales": {
             "de": {
               "labelFontFamily": "inter",
@@ -160,7 +197,11 @@
             },
             "ko": {
               "labelFontFamily": "korean-sans",
-              "headlineFontFamily": "korean-display"
+              "headlineFontFamily": "korean-display",
+              "labelFontSize": 122,
+              "headlineFontSize": 116,
+              "labelLineHeight": 1.14,
+              "headlineLineHeight": 1.02
             },
             "ja": {
               "labelFontFamily": "japanese-sans",
@@ -179,40 +220,63 @@
               "headlineFontFamily": "be-vietnam-pro"
             }
           }
-        }
+        },
+        "background": {
+          "mode": "theme",
+          "decorations": false
+        },
+        "inverted": true
       },
       {
         "id": "shiftking-team",
         "layout": "two-devices",
         "label": {
-          "ko": "동료 근무",
-          "en": "TEAM"
+          "ko": "팀 근무도 한 번에",
+          "en": "TEAM SCHEDULES"
         },
         "headline": {
-          "ko": "동료 근무도\n쉽게 확인",
-          "en": "See every teammate\nshift"
+          "ko": "동료, \n다른 회사 근무표까지\n",
+          "en": "View coworkers' \nshift"
         },
-        "screenshot": "/screenshots/uploaded/0656a04595bbf9eb.png",
-        "screenshotSecondary": "/screenshots/uploaded/3b5746f127767b04.png",
+        "screenshot": "/screenshots/uploaded/e8f0e27cf8b03386.png",
+        "screenshotSecondary": "/screenshots/uploaded/5f01633c8bc3c790.png",
         "transforms": {
           "deviceSecondary": {
-            "x": -79.19999999999982,
-            "y": 949.8070450097846,
+            "x": -408.9606382978873,
+            "y": 739.6740662863831,
             "width": 871.2,
             "height": 1774.7929549902153,
             "rotation": 0,
-            "zIndex": 2
+            "zIndex": 1
           },
           "device": {
-            "x": 486.92804610951,
-            "y": 952.1759999999998,
+            "x": 220.23655674780457,
+            "y": 951.2451489361705,
             "width": 912.27195389049,
             "height": 1858.4640000000002,
             "rotation": 0,
-            "zIndex": 3
+            "zIndex": 2
+          },
+          "headline": {
+            "x": 113.5999212646484,
+            "y": 590.3215948461914,
+            "width": 1109,
+            "height": 558,
+            "rotation": 0,
+            "zIndex": 5
+          },
+          "label": {
+            "x": 105.59999999999991,
+            "y": 229.44,
+            "width": 1108.8,
+            "height": 176.6688,
+            "rotation": 0,
+            "zIndex": 4
           }
         },
         "typography": {
+          "labelFontSize": 157,
+          "headlineFontSize": 116,
           "locales": {
             "de": {
               "labelFontFamily": "inter",
@@ -240,7 +304,9 @@
             },
             "ko": {
               "labelFontFamily": "korean-sans",
-              "headlineFontFamily": "korean-display"
+              "headlineFontFamily": "korean-display",
+              "headlineFontSize": 106,
+              "headlineLineHeight": 0.94
             },
             "ja": {
               "labelFontFamily": "japanese-sans",
@@ -259,20 +325,27 @@
               "headlineFontFamily": "be-vietnam-pro"
             }
           }
+        },
+        "background": {
+          "mode": "gradient",
+          "decorations": false,
+          "color": "#ffffff",
+          "color2": "#DBEAFE",
+          "angle": 68
         }
       },
       {
         "id": "shiftking-widgets",
         "layout": "device-top",
         "label": {
-          "ko": "위젯",
-          "en": "WIDGETS"
+          "ko": "위젯으로 더 편리하게",
+          "en": "SMART WIDGETS"
         },
         "headline": {
-          "ko": "위젯으로\n바로 확인",
-          "en": "Your shift\non widgets"
+          "ko": "홈 화면에서 바로 확인",
+          "en": "See shifts instantly"
         },
-        "screenshot": "/screenshots/apple/iphone/{locale}/04.png",
+        "screenshot": "/screenshots/uploaded/4d209b910fa88739.png",
         "inverted": true,
         "transforms": {
           "caption": {
@@ -282,9 +355,35 @@
             "height": 803.0400000000001,
             "rotation": 0,
             "zIndex": 4
+          },
+          "device": {
+            "x": 153.1822478386166,
+            "y": -286.8,
+            "width": 1013.6355043227666,
+            "height": 2064.96,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "label": {
+            "x": 113.63361460989836,
+            "y": 1912.4016590086194,
+            "width": 1109,
+            "height": 261,
+            "rotation": 0,
+            "zIndex": 4
+          },
+          "headline": {
+            "x": 113.22765957446836,
+            "y": 2184.7996851063863,
+            "width": 1108.8,
+            "height": 570.1584,
+            "rotation": 0,
+            "zIndex": 4
           }
         },
         "typography": {
+          "labelFontSize": 123,
+          "headlineFontSize": 116,
           "locales": {
             "de": {
               "labelFontFamily": "inter",
@@ -312,7 +411,10 @@
             },
             "ko": {
               "labelFontFamily": "korean-sans",
-              "headlineFontFamily": "korean-display"
+              "headlineFontFamily": "korean-display",
+              "labelFontSize": 120,
+              "headlineFontSize": 95,
+              "headlineLineHeight": 0.94
             },
             "ja": {
               "labelFontFamily": "japanese-sans",
@@ -337,15 +439,16 @@
         "id": "shiftking-tools",
         "layout": "device-bottom",
         "label": {
-          "ko": "부가기능",
-          "en": "TOOLS"
+          "ko": "교대근무에 필요한\n모든 기능\n",
+          "en": "MORE THAN A CALENDAR"
         },
         "headline": {
-          "ko": "알림, 통계,\n연차계산까지",
-          "en": "Alerts, stats,\nleave days"
+          "ko": "알림, 통계,\n연차계산까지\n",
+          "en": "Reminders, Stats,\nLeave days"
         },
-        "screenshot": "/screenshots/apple/iphone/{locale}/05.png",
+        "screenshot": "/screenshots/uploaded/d10dd422dd8be7ed.png",
         "typography": {
+          "labelFontSize": 117,
           "locales": {
             "de": {
               "labelFontFamily": "inter",
@@ -373,7 +476,10 @@
             },
             "ko": {
               "labelFontFamily": "korean-sans",
-              "headlineFontFamily": "korean-display"
+              "headlineFontFamily": "korean-display",
+              "labelFontSize": 126,
+              "headlineFontSize": 103,
+              "labelLineHeight": 1.1
             },
             "ja": {
               "labelFontFamily": "japanese-sans",
@@ -392,6 +498,39 @@
               "headlineFontFamily": "be-vietnam-pro"
             }
           }
+        },
+        "transforms": {
+          "device": {
+            "x": 145.14863439323926,
+            "y": 1119.243025210088,
+            "width": 1013.6355043227666,
+            "height": 2064.96,
+            "rotation": 0,
+            "zIndex": 3
+          },
+          "label": {
+            "x": 105.60000000000036,
+            "y": 229.44,
+            "width": 1108.8,
+            "height": 176.6688,
+            "rotation": 0,
+            "zIndex": 4
+          },
+          "headline": {
+            "x": 105.60000000000036,
+            "y": 679.2291630252113,
+            "width": 1108.8,
+            "height": 570.1584,
+            "rotation": 0,
+            "zIndex": 5
+          }
+        },
+        "background": {
+          "mode": "gradient",
+          "decorations": false,
+          "color": "#F8FAFC",
+          "color2": "#DBEAFE",
+          "angle": 160
         }
       }
     ],

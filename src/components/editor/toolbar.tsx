@@ -30,11 +30,15 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DEVICE_LABEL,
+  type ExportSize,
+  getExportSizes,
   supportsLandscape,
 } from "@/lib/constants";
 import { detectPlatform } from "@/lib/defaults";
 import { normalizeLocaleCode, normalizeLocaleList } from "@/lib/localization-import";
 import type { Device, Orientation } from "@/lib/types";
+
+type ExportOptions = { locales: string[]; sizes: ExportSize[] };
 
 type Props = {
   appName: string;
@@ -51,7 +55,7 @@ type Props = {
   setDevice: (v: Device) => void;
   orientation: Orientation;
   setOrientation: (v: Orientation) => void;
-  onExport: () => void;
+  onExport: (options: ExportOptions) => void;
   onResetAll: () => void;
   onResetDevice: () => void;
   exporting: string | null;
@@ -65,6 +69,7 @@ export function Toolbar(props: Props) {
   const hasLandscape = supportsLandscape(props.device);
   const [resetOpen, setResetOpen] = React.useState(false);
   const [languageOpen, setLanguageOpen] = React.useState(false);
+  const [exportOpen, setExportOpen] = React.useState(false);
 
   // Track last device per platform so iOS/Android tabs preserve user's choice.
   const lastByPlatform = React.useRef<{ ios: Device; android: Device }>({
@@ -215,11 +220,11 @@ export function Toolbar(props: Props) {
           <RotateCcw className="h-4 w-4" />
         </Button>
         <Button
-          onClick={props.onExport}
+          onClick={() => setExportOpen(true)}
           disabled={!!props.exporting}
           size="sm"
           className="h-8"
-          title="Export every size × locale for this device as a zip"
+          title="Choose languages and sizes, then export as a zip"
         >
           <Download className="h-4 w-4" />
           {props.exporting ? `Exporting ${props.exporting}` : "Export bundle"}
@@ -273,7 +278,175 @@ export function Toolbar(props: Props) {
         onDownloadLocalization={props.onDownloadLocalization}
         busy={props.busy}
       />
+
+      <ExportDialog
+        open={exportOpen}
+        onOpenChange={setExportOpen}
+        locales={props.locales}
+        device={props.device}
+        orientation={props.orientation}
+        onExport={props.onExport}
+      />
     </div>
+  );
+}
+
+function ExportDialog({
+  open,
+  onOpenChange,
+  locales,
+  device,
+  orientation,
+  onExport,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  locales: string[];
+  device: Device;
+  orientation: Orientation;
+  onExport: (options: ExportOptions) => void;
+}) {
+  const sizes = getExportSizes(device, orientation);
+  const [selectedLocales, setSelectedLocales] = React.useState<string[]>(locales);
+  const [selectedSizeLabels, setSelectedSizeLabels] = React.useState<string[]>(
+    sizes.map((s) => s.label),
+  );
+
+  React.useEffect(() => {
+    if (open) {
+      setSelectedLocales(locales);
+      setSelectedSizeLabels(sizes.map((s) => s.label));
+    }
+    // sizes is derived from device/orientation; re-deriving here on every
+    // open keeps selection in sync without needing sizes in the dep array.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, locales, device, orientation]);
+
+  function toggleLocale(code: string) {
+    setSelectedLocales((prev) =>
+      prev.includes(code) ? prev.filter((l) => l !== code) : [...prev, code],
+    );
+  }
+
+  function toggleSize(label: string) {
+    setSelectedSizeLabels((prev) =>
+      prev.includes(label) ? prev.filter((l) => l !== label) : [...prev, label],
+    );
+  }
+
+  const allLocalesSelected = selectedLocales.length === locales.length;
+  const allSizesSelected = selectedSizeLabels.length === sizes.length;
+  const canExport = selectedLocales.length > 0 && selectedSizeLabels.length > 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Export bundle</DialogTitle>
+          <DialogDescription>
+            Choose which languages and sizes to include. Exporting fewer of each is faster.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground">Languages</label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() => setSelectedLocales(allLocalesSelected ? [] : locales)}
+              >
+                {allLocalesSelected ? "Clear" : "All languages"}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {locales.map((code) => {
+                const active = selectedLocales.includes(code);
+                return (
+                  <button
+                    key={code}
+                    type="button"
+                    onClick={() => toggleLocale(code)}
+                    aria-pressed={active}
+                    className={`rounded border px-2 py-1 text-xs font-medium ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
+                    }`}
+                  >
+                    {code.toUpperCase()}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground">
+                Sizes (inches)
+              </label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 text-xs"
+                onClick={() =>
+                  setSelectedSizeLabels(allSizesSelected ? [] : sizes.map((s) => s.label))
+                }
+              >
+                {allSizesSelected ? "Clear" : "All sizes"}
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {sizes.map((size) => {
+                const active = selectedSizeLabels.includes(size.label);
+                return (
+                  <button
+                    key={size.label}
+                    type="button"
+                    onClick={() => toggleSize(size.label)}
+                    aria-pressed={active}
+                    className={`rounded border px-2 py-1 text-xs font-medium ${
+                      active
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "bg-background hover:bg-muted"
+                    }`}
+                    title={`${size.w}×${size.h}`}
+                  >
+                    {size.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button type="button" variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              disabled={!canExport}
+              onClick={() => {
+                onOpenChange(false);
+                onExport({
+                  locales: selectedLocales,
+                  sizes: sizes.filter((s) => selectedSizeLabels.includes(s.label)),
+                });
+              }}
+            >
+              <Download className="h-4 w-4" />
+              Export
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
 
